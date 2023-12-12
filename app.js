@@ -1,5 +1,7 @@
 const matrixXLength = 10;
 const matrixYLength = 20;
+const mainBoard = document.querySelector('.main_board');
+const startGameBtn = document.querySelector('.startGame_btn');
 
 class GameBoard {
     constructor(matrixXLength, matrixYLength){
@@ -18,7 +20,6 @@ class GameBoard {
     }
 
     createGameBoard(){
-        
         this.matrix.forEach(row => {
             row.forEach(rowItem => {
                 if(rowItem === 0){
@@ -33,6 +34,12 @@ class GameBoard {
         console.log(this.gameBoard);
     }
 }
+
+startGameBtn.addEventListener('click', () => {
+    console.log("Yayyy")
+    startGameBtn.classList.toggle("hidden");
+    mainBoard.classList.toggle('remove_blur');
+})
 
 const todo = new GameBoard(matrixXLength, matrixYLength);
 todo.createMatrix();

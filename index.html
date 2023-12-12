@@ -7,10 +7,23 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    
     <div class="container">
-        <div class="level_board"></div>
-        <div class="game_board"></div>
-        <div class="points_board"></div>
+        <button class="startGame_btn">Start Game</button>
+
+        <div class="main_board">
+            <div class="levels_board board">
+                <h2 class="level">level</h2>
+                <p class="level_value">1</p>
+            </div>
+
+            <div class="game_board"></div>
+
+            <div class="points_board board">
+                <h2 class="points">points</h2>
+                <p class="points_value">0</p>
+            </div>
+        </div>
     </div>
     <script src="app.js"></script>
 </body>
