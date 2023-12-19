@@ -1,0 +1,6 @@
+{
+  "editor.renderWhitespace": "trailing",
+  "editor.wordWrap": "on",
+  "files.autoSave": "onFocusChange",
+  "workbench.sideBar.location": "left"
+}
