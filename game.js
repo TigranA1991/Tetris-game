@@ -3,34 +3,34 @@
 class Game {
   constructor() {
     this.inProgress = false;
+    this.tetroMovingInProgress = false;
   }
 
   makeGame() {
-    this.inProgress = true;
+    this.gameInProgress = true;
 
-    if (this.inProgress) {
-      this.addNewTetrominoOnGameBoard();
-      this.drawGameBoard();
+    if (this.gameInProgress) {
+      this.addNewTetrominoToMatrix();
+      this.renderGameBoard();
+      this.movingInProgress = true;
+      // this.renderGameBoard();
+
+      if (this.movingInProgress) {
+        const interval = setInterval(() => this.makeMoveDown(interval), 500);
+      }
     }
 
-    const interval = setInterval(() => {
-      const currentCoordinates = this.findCurrentTetrominoPiecesCoordinates();
-      const canMove =
-        this.checkTetrominoMoveDownPossibility(currentCoordinates);
-      if (!canMove) {
-        clearInterval(interval);
-        currentCoordinates.forEach((coordinate) => {
-          matrix_fake[coordinate[0]][coordinate[1]] = 2;
-        });
-        this.makeGame();
-      } else {
-        this.updateMatrixAfterMove(currentCoordinates);
+    document.addEventListener("keydown", (e) => {
+      switch (e.key) {
+        case "ArrowLeft":
+          this.moveToLeft();
+          break;
+        case "ArrowRight":
+          this.moveToRight();
+        default:
+          break;
       }
-      if (document.getElementById("gameBoard") !== null) {
-        document.getElementById("gameBoard").remove();
-      }
-      this.drawGameBoard();
-    }, 500);
+    });
   }
 
   //Creating 2-dimensional MATRIX for drawing game board
@@ -42,31 +42,58 @@ class Game {
     this.MATRIX.forEach((row) => row.fill(0));
   }
 
-  createBoardPieaceDiv(element, className) {
+  createBoardPieaceElem(element, className) {
     element.setAttribute("class", className);
     document.querySelector(".game_board").appendChild(element);
   }
 
-  //Draw game board in browser
-  drawGameBoard() {
+  createGameBoardElem() {
+    if (document.getElementById("gameBoard") !== null) {
+      document.getElementById("gameBoard").remove();
+    }
     const gameBoard = document.createElement("div");
     gameBoard.setAttribute("class", "game_board");
     gameBoard.setAttribute("id", "gameBoard");
     document.querySelector(".game_board-wrapper").appendChild(gameBoard);
+  }
+
+  //Generating random integer for index with specified quantity
+  generateRandomIndex(numberOfTetrominos) {
+    return Math.floor(Math.random() * numberOfTetrominos);
+  }
+
+  //Function for generating random tetromino kind name and executing it from SHAPES list
+  generateRandomTetromino() {
+    const randomIndex = this.generateRandomIndex(7);
+    const randomTetrominoType = TETROMINO_TYPES[randomIndex];
+    return SHAPES[randomTetrominoType];
+  }
+
+  //Drawing new tetromino on game board
+  addNewTetrominoToMatrix() {
+    const newGeneratedTetromino = this.generateRandomTetromino();
+    newGeneratedTetromino.forEach((shapeRow, rowIndex) => {
+      shapeRow.forEach((tetroPiece, pieceIndex) => {
+        matrix_fake[rowIndex][4 + pieceIndex] = tetroPiece;
+      });
+    });
+  }
+
+  drawGameBoard() {
     matrix_fake.forEach((row) => {
       row.forEach((rowItem) => {
         switch (rowItem) {
           case EMPTY:
             const emptyCell = document.createElement("div");
-            this.createBoardPieaceDiv(emptyCell, "emptyCell");
+            this.createBoardPieaceElem(emptyCell, "emptyCell");
             break;
           case TETRO:
             const tetroCell = document.createElement("div");
-            this.createBoardPieaceDiv(tetroCell, "tetroCell");
+            this.createBoardPieaceElem(tetroCell, "tetroCell");
             break;
           case DONE:
             const doneTetroCell = document.createElement("div");
-            this.createBoardPieaceDiv(doneTetroCell, "doneTetroCell");
+            this.createBoardPieaceElem(doneTetroCell, "doneTetroCell");
             break;
           default:
             break;
@@ -75,26 +102,26 @@ class Game {
     });
   }
 
-  //Generating random integer for index with specified quantity
-  generateRandomIndex(numberOftetrominos) {
-    return Math.floor(Math.random() * numberOftetrominos);
+  //Draw game board in browser
+  renderGameBoard() {
+    this.createGameBoardElem();
+    this.drawGameBoard();
   }
 
-  //Function for generating random tetromino kind name and executing it from SHAPES list
-  generateRandomTetromino() {
-    const randomIndex = this.generateRandomIndex(7);
-    const randomtetrominoType = TETROMINO_TYPES[randomIndex];
-    return SHAPES[randomtetrominoType];
-  }
-
-  //Drawing new tetromino on game board
-  addNewTetrominoOnGameBoard() {
-    const newGeneratedTetromino = this.generateRandomTetromino();
-    newGeneratedTetromino.forEach((shapeRow, rowIndex) => {
-      shapeRow.forEach((tetroPiece, pieceIndex) => {
-        matrix_fake[rowIndex][4 + pieceIndex] = tetroPiece;
+  makeMoveDown(interval) {
+    const currentCoordinates = this.findCurrentTetrominoPiecesCoordinates();
+    const canMove = this.checkTetrominoMoveDownPossibility(currentCoordinates);
+    if (!canMove) {
+      clearInterval(interval);
+      this.tetroMovingInProgress = false;
+      currentCoordinates.forEach((coordinate) => {
+        matrix_fake[coordinate[0]][coordinate[1]] = 2;
       });
-    });
+      this.makeGame();
+    } else {
+      this.updateMatrixAfterMoveDown(currentCoordinates);
+    }
+    this.renderGameBoard();
   }
 
   findCurrentTetrominoPiecesCoordinates() {
@@ -118,10 +145,39 @@ class Game {
     const movingPossibilities = currentCoordinates.map((coordinate, i) => {
       if (coordinate[0] + 1 > matrix_fake.length - 1) {
         return false;
-      } else if (
-        matrix_fake[coordinate[0] + 1][coordinate[1]] !== undefined &&
-        matrix_fake[coordinate[0] + 1][coordinate[1]] !== 2
-      ) {
+      } else if (matrix_fake[coordinate[0] + 1][coordinate[1]] !== 2) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+
+    const canMove = movingPossibilities.every((value) => value === true);
+
+    return canMove;
+  }
+
+  checkTetrominoMoveLeftPossibility(currentCoordinates) {
+    const movingPossibilities = currentCoordinates.map((coordinate, i) => {
+      if (coordinate[1] - 1 < 0) {
+        return false;
+      } else if (matrix_fake[coordinate[0]][coordinate[1] - 1] !== 2) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+
+    const canMove = movingPossibilities.every((value) => value === true);
+
+    return canMove;
+  }
+
+  checkTetrominoMoveRightPossibility(currentCoordinates) {
+    const movingPossibilities = currentCoordinates.map((coordinate, i) => {
+      if (coordinate[1] + 1 > 9) {
+        return false;
+      } else if (matrix_fake[coordinate[0]][coordinate[1] + 1] !== 2) {
         return true;
       } else {
         return false;
@@ -134,46 +190,46 @@ class Game {
   }
 
   // Updating MATRIX on next move
-  updateMatrixAfterMove(currentCoordinates) {
+  updateMatrixAfterMoveDown(currentCoordinates) {
     currentCoordinates.forEach((coordinate) => {
       matrix_fake[coordinate[0]][coordinate[1]] = 0;
       matrix_fake[coordinate[0] + 1][coordinate[1]] = 1;
     });
   }
 
-  creatingGameBoard() {
-    const updatedGameBoard = document.createElement("div");
-    updatedGameBoard.setAttribute("id", "gameBoard");
-    updatedGameBoard.setAttribute("class", "game_board");
-    gameBoardWrapper.appendChild(updatedGameBoard);
+  updateMatrixAfterMoveLeft(currentCoordinates) {
+    currentCoordinates.forEach((coordinate) => {
+      matrix_fake[coordinate[0]][coordinate[1]] = 0;
+      matrix_fake[coordinate[0]][coordinate[1] - 1] = 1;
+    });
   }
 
-  // checkGameBoardUpdatingState() {
-  //   if (document.getElementById("gameBoard") !== null) {
-  //     document.getElementById("gameBoard").remove();
-  //   }
-  // }
-
-  settingIntervalForTetrominoMoves(propsAfterMoving) {
-    const interval = setInterval(() => {
-      const currentTetrominoPiecesCoordinates =
-        this.findCurrentTetrominoPiecesCoordinates();
-      const tetrominosMoveDownPossibilityProperties =
-        this.checkTetrominoMoveDownPossibility(
-          currentTetrominoPiecesCoordinates
-        );
-      this.updateMatrixAfterMove(propsAfterMoving);
-      this.drawGameBoard();
-    }, 1000);
+  updateMatrixAfterMoveRight(currentCoordinates) {
+    currentCoordinates.reverse().forEach((coordinate) => {
+      matrix_fake[coordinate[0]][coordinate[1]] = 0;
+      matrix_fake[coordinate[0]][coordinate[1] + 1] = 1;
+    });
   }
 
-  // updating game board after move
-  updateGameBoardAfterMove() {
-    this.checkGameBoardUpdatingState();
-    this.updateMatrixAfterMove();
-    this.settingIntervalForTetrominoMoves();
-    this.drawGameBoard();
+  moveToLeft() {
+    const currentCoordinates = this.findCurrentTetrominoPiecesCoordinates();
+    const canMove = this.checkTetrominoMoveLeftPossibility(currentCoordinates);
+    if (!canMove) {
+      return;
+    } else {
+      this.updateMatrixAfterMoveLeft(currentCoordinates);
+    }
+    this.renderGameBoard();
   }
 
-  tetrominoInGame() {}
+  moveToRight() {
+    const currentCoordinates = this.findCurrentTetrominoPiecesCoordinates();
+    const canMove = this.checkTetrominoMoveRightPossibility(currentCoordinates);
+    if (!canMove) {
+      return;
+    } else {
+      this.updateMatrixAfterMoveRight(currentCoordinates);
+    }
+    this.renderGameBoard();
+  }
 }

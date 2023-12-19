@@ -2,5 +2,6 @@
   "editor.renderWhitespace": "trailing",
   "editor.wordWrap": "on",
   "files.autoSave": "onFocusChange",
-  "workbench.sideBar.location": "left"
+  "workbench.sideBar.location": "left",
+  "editor.fontFamily": "Source Code Pro"
 }
