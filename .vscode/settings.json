@@ -3,5 +3,6 @@
   "editor.wordWrap": "on",
   "files.autoSave": "onFocusChange",
   "workbench.sideBar.location": "left",
-  "editor.fontFamily": "Source Code Pro"
+  "editor.fontFamily": "Source Code Pro",
+  "editor.fontLigatures": false
 }

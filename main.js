@@ -6,6 +6,7 @@ function startGame() {
   levelValue.textContent = Number(levelValue.textContent + 1);
   const game = new Game();
   game.makeGame();
+  game.addEventListener();
 }
 
 //Start game commands execution

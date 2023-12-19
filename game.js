@@ -19,7 +19,9 @@ class Game {
         const interval = setInterval(() => this.makeMoveDown(interval), 500);
       }
     }
+  }
 
+  addEventListener() {
     document.addEventListener("keydown", (e) => {
       switch (e.key) {
         case "ArrowLeft":
