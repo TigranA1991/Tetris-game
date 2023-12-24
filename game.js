@@ -4,6 +4,8 @@ class Game {
   constructor() {
     this.inProgress = false;
     this.tetroMovingInProgress = false;
+    this.currentTetromino = [];
+    this.n = 1;
   }
 
   makeGame() {
@@ -16,7 +18,8 @@ class Game {
       // this.renderGameBoard();
 
       if (this.movingInProgress) {
-        const interval = setInterval(() => this.makeMoveDown(interval), 500);
+        this.n = 1;
+        const interval = setInterval(() => this.makeMoveDown(interval), 1000);
       }
     }
   }
@@ -26,6 +29,9 @@ class Game {
       switch (e.key) {
         case "ArrowLeft":
           this.moveToLeft();
+          break;
+        case "ArrowUp":
+          this.rotate();
           break;
         case "ArrowRight":
           this.moveToRight();
@@ -73,8 +79,8 @@ class Game {
 
   //Drawing new tetromino on game board
   addNewTetrominoToMatrix() {
-    const newGeneratedTetromino = this.generateRandomTetromino();
-    newGeneratedTetromino.forEach((shapeRow, rowIndex) => {
+    this.currentTetromino = this.generateRandomTetromino();
+    this.currentTetromino.forEach((shapeRow, rowIndex) => {
       shapeRow.forEach((tetroPiece, pieceIndex) => {
         matrix_fake[rowIndex][4 + pieceIndex] = tetroPiece;
       });
@@ -111,6 +117,7 @@ class Game {
   }
 
   makeMoveDown(interval) {
+    this.n += 1;
     const currentCoordinates = this.findCurrentTetrominoPiecesCoordinates();
     const canMove = this.checkTetrominoMoveDownPossibility(currentCoordinates);
     if (!canMove) {
@@ -231,6 +238,46 @@ class Game {
       return;
     } else {
       this.updateMatrixAfterMoveRight(currentCoordinates);
+    }
+    this.renderGameBoard();
+  }
+
+  rotate() {
+    const currentCoordinates = this.findCurrentTetrominoPiecesCoordinates();
+    const xCoordinates = currentCoordinates.map((x) => x[0]);
+    const yCoordinates = currentCoordinates.map((y) => y[0]);
+    const x1 =
+      xCoordinates.reduce((acc, current) => acc + current, 0) /
+      currentCoordinates.length;
+    const y1 =
+      yCoordinates.reduce((acc, current) => acc + current, 0) /
+      currentCoordinates.length;
+    const canMove = this.checkTetrominoMoveRightPossibility(currentCoordinates);
+    const rotatedTetromino = [];
+    if (!canMove) {
+      return;
+    } else {
+      for (let i = 0; i < this.currentTetromino.length; i++) {
+        rotatedTetromino.push([]);
+        for (let j = 0; j < this.currentTetromino[i].length; j++) {
+          rotatedTetromino[i][j] = this.currentTetromino[j][i];
+        }
+      }
+
+      this.currentTetromino = rotatedTetromino.reverse();
+
+      for (let i = 0; i < matrix_fake.length; i++) {
+        for (let j = 0; j < matrix_fake[i].length; j++) {
+          matrix_fake[i][j] = 0;
+        }
+      }
+
+      this.currentTetromino.forEach((shapeRow, rowIndex) => {
+        shapeRow.forEach((tetroPiece, pieceIndex) => {
+          matrix_fake[Math.round(x1) + rowIndex][Math.round(y1) + pieceIndex] =
+            tetroPiece;
+        });
+      });
     }
     this.renderGameBoard();
   }

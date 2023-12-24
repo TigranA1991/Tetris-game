@@ -1,11 +1,10 @@
 "use strict";
 
-const COLS = 10;
-const ROWS = 20;
-
-const EMPTY = 0;
-const TETRO = 1;
-const DONE = 2;
+const COLS = 10,
+  ROWS = 20,
+  EMPTY = 0,
+  TETRO = 1,
+  DONE = 2;
 
 const matrix_fake = [
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
